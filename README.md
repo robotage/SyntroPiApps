@@ -31,6 +31,7 @@ To compile the GS apps, install the gstreamer sdk at the standard location. See 
 Then:
 
 	cd ~/SyntroNet
+	git clone git://github.com/richards-tech/SyntroApps.git
 	git clone git://github.com/richards-tech/SyntroPiApps.git
 	cd SyntroPiApps
 	qmake SyntroPiApps.pro

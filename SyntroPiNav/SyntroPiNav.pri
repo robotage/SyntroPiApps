@@ -1,5 +1,5 @@
 #
-#  Copyright (c) 2014 Scott Ellis and Richard Barnett.
+#  Copyright (c) 2014 richards-tech.
 #
 #  This file is part of SyntroNet
 #
@@ -17,11 +17,21 @@
 #  along with SyntroNet.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-greaterThan(QT_MAJOR_VERSION, 4): cache()
+INCLUDEPATH += $$PWD
+DEPENDPATH += $$PWD
 
-TEMPLATE = subdirs
+HEADERS += SyntroPiNav.h \
+        SyntroPiNavConsole.h \
+        NavClient.h \
+        IMUThread.h \
+        CompassCalDlg.h
 
-SUBDIRS = SyntroPiCam \
-	SyntroPiNav
+SOURCES += main.cpp \
+        SyntroPiNav.cpp \
+        SyntroPiNavConsole.cpp \
+        NavClient.cpp \
+        IMUThread.cpp \
+        CompassCalDlg.cpp
 
+FORMS += SyntroPiNav.ui
 

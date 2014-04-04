@@ -1,5 +1,5 @@
 #
-#  Copyright (c) 2014 Scott Ellis and Richard Barnett.
+#  Copyright (c) 2014 richards-tech.
 #
 #  This file is part of SyntroNet
 #
@@ -19,9 +19,37 @@
 
 greaterThan(QT_MAJOR_VERSION, 4): cache()
 
-TEMPLATE = subdirs
+TEMPLATE = app
 
-SUBDIRS = SyntroPiCam \
-	SyntroPiNav
+TARGET = SyntroPiNav
 
+DESTDIR = Output
+
+QT += core gui network
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+CONFIG += debug_and_release link_pkgconfig
+
+PKGCONFIG += syntro
+
+target.path = /usr/bin
+
+INSTALLS += target
+
+DEFINES += QT_NETWORK_LIB
+
+INCLUDEPATH += GeneratedFiles
+
+MOC_DIR += GeneratedFiles/moc
+
+OBJECTS_DIR += objects 
+
+UI_DIR += GeneratedFiles
+
+RCC_DIR += GeneratedFiles
+
+include(SyntroPiNav.pri)
+include(../../SyntroApps/SyntroCommon/Nav/Nav.pri)
+include(../../SyntroApps/SyntroCommon/Nav/RTIMULib/RTIMULib.pri)
 
