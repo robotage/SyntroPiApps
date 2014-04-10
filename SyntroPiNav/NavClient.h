@@ -22,10 +22,11 @@
 
 #include <qmutex.h>
 #include <QMutex>
+#include <QQueue>
 
 #include "SyntroLib.h"
 
-#include "RTMath.h"
+#include "RTIMULib.h"
 
 #define NAVCLIENT_BACKGROUND_INTERVAL    (SYNTRO_CLOCKS_PER_SEC / 100)
 
@@ -38,8 +39,7 @@ public:
     virtual ~NavClient();
 
 public slots:
-    void newIMUData(const RTVector3&, const RTQuaternion&, const RTVector3& gyro,
-                    const RTVector3& accel, const RTVector3& compass, const uint64_t timestamp);
+    void newIMUData(const RTIMU_DATA& data);
 
     void newStream();
 
@@ -49,22 +49,10 @@ protected:
 	void appClientBackground();
 
 private:
-    RTVector3 m_gyro;
-    RTVector3 m_accel;
-    RTVector3 m_compass;
-
-    RTVector3 m_pose;
-    RTQuaternion m_stateVector;
-
-    qint64 m_timestamp;
-
-    bool m_newIMUData;
+    QMutex m_navLock;
+    QQueue<RTIMU_DATA> m_imuData;
 
     int m_servicePort;
-
-    QMutex m_navLock;
-
-
 };
 
 #endif // NAVCLIENT_H

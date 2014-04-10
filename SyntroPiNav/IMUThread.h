@@ -23,10 +23,12 @@
 #include "SyntroLib.h"
 
 #include "RTMath.h"
-#include "RTIMUSettings.h"
+#include "RTIMULibDefs.h"
 
-class RTIMUMPU9150;
 class RTIMU;
+class RTIMUSettings;
+
+Q_DECLARE_METATYPE(RTIMU_DATA);
 
 class IMUThread : public SyntroThread
 {
@@ -42,10 +44,12 @@ public:
 
     RTIMU *getIMU() { return (RTIMU *)m_imu; }
 
+public slots:
+    void newIMU();
+
 signals:
     void newCalData(const RTVector3& compass);
-    void newIMUData(const RTVector3&, const RTQuaternion&, const RTVector3& gyro,
-                    const RTVector3& accel, const RTVector3& compass, const uint64_t timestamp);
+    void newIMUData(const RTIMU_DATA& data);
 
 protected:
     void initThread();
@@ -56,7 +60,7 @@ private:
     int m_timer;
     RTIMUSettings *m_settings;
 
-    RTIMUMPU9150 *m_imu;
+    RTIMU *m_imu;
     bool m_calibrationMode;
 };
 

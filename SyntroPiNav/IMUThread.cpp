@@ -18,13 +18,14 @@
 //
 
 #include "IMUThread.h"
-#include "RTIMUMPU9150.h"
-#include "RTKalman.h"
+#include "RTIMUSettings.h"
+#include "RTFusion.h"
+#include "RTIMU.h"
+
 #include "SyntroPiNav.h"
 
 IMUThread::IMUThread() : SyntroThread("IMUThread", "IMUThread")
 {
-    m_imu = NULL;
     m_calibrationMode = false;
     m_settings = new RTIMUSettings("RTIMULib");
 }
@@ -34,31 +35,12 @@ IMUThread::~IMUThread()
 
 }
 
-void IMUThread::setCalibrationMode(bool enable)
-{
-    m_imu->setCalibrationMode(enable);
-    m_calibrationMode = enable;
-}
-
-void IMUThread::newCompassCalData(const RTVector3& compassCalMin, const RTVector3& compassCalMax)
-{
-    m_settings->m_compassCalValid = true;
-    m_settings->m_compassCalMin = compassCalMin;
-    m_settings->m_compassCalMax = compassCalMax;
-    m_settings->saveSettings();
-    m_imu->setCalibrationData(true, compassCalMin, compassCalMax);
-}
-
 
 void IMUThread::initThread()
 {
-    m_imu = new RTIMUMPU9150(m_settings->m_kalmanType);
-
-    //  set up IMU
-
-    m_imu->IMUInit(m_settings);
-
-    m_timer = startTimer(1000 / (2 * m_settings->m_MPU9150GyroAccelSampleRate));
+    m_imu = NULL;
+    m_timer = -1;
+    newIMU();
 }
 
 void IMUThread::finishThread()
@@ -73,15 +55,57 @@ void IMUThread::finishThread()
     delete m_settings;
 }
 
+void IMUThread::newIMU()
+{
+    if (m_imu != NULL) {
+        delete m_imu;
+        m_imu = NULL;
+    }
+
+    m_imu = RTIMU::createIMU(m_settings);
+
+    if (m_imu == NULL)
+        return;
+
+    //  set up IMU
+
+    m_imu->IMUInit();
+
+    m_timer = startTimer(m_imu->IMUGetPollInterval());
+}
+
+
 void IMUThread::timerEvent(QTimerEvent * /* event */)
 {
-    if (m_imu->IMURead()) {
+    if (m_imu == NULL)
+        return;
+
+    if (m_imu->IMUType() == RTIMU_TYPE_NULL)
+        return;
+
+    while (m_imu->IMURead()) {
         if (m_calibrationMode) {
             emit newCalData(m_imu->getCompass());
         } else {
-            emit newIMUData(m_imu->getKalmanPose(), m_imu->getKalmanQPose(),
-                            m_imu->getGyro(), m_imu->getAccel(), m_imu->getCompass(),
-                            RTMath::currentUSecsSinceEpoch());
+            emit newIMUData(m_imu->getIMUData());
         }
     }
 }
+
+void IMUThread::setCalibrationMode(bool enable)
+{
+    m_imu->setCalibrationMode(enable);
+    m_calibrationMode = enable;
+}
+
+void IMUThread::newCompassCalData(const RTVector3& compassCalMin, const RTVector3& compassCalMax)
+{
+    m_settings->m_compassCalValid = true;
+    m_settings->m_compassCalMin = compassCalMin;
+    m_settings->m_compassCalMax = compassCalMax;
+    m_settings->saveSettings();
+    if (m_imu != NULL)
+        m_imu->setCalibrationData(true, compassCalMin, compassCalMax);
+}
+
+

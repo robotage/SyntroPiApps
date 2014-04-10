@@ -24,14 +24,16 @@ HEADERS += SyntroPiNav.h \
         SyntroPiNavConsole.h \
         NavClient.h \
         IMUThread.h \
-        CompassCalDlg.h
+        CompassCalDlg.h \
+        SelectIMUDlg.h
 
 SOURCES += main.cpp \
         SyntroPiNav.cpp \
         SyntroPiNavConsole.cpp \
         NavClient.cpp \
         IMUThread.cpp \
-        CompassCalDlg.cpp
+        CompassCalDlg.cpp \
+	SelectIMUDlg.cpp
 
 FORMS += SyntroPiNav.ui
 

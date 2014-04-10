@@ -27,6 +27,7 @@
 #include "ui_SyntroPiNav.h"
 
 #include "RTMath.h"
+#include "RTIMULibDefs.h"
 
 #define PRODUCT_TYPE "SyntroPiNav"
 
@@ -45,12 +46,15 @@ public slots:
 	void onAbout();
 	void onBasicSetup();
     void onCalibrateCompass();
+    void onSelectIMU();
     void onEnableGyro(int);
     void onEnableAccel(int);
     void onEnableCompass(int);
     void onEnableDebug(int);
-    void newIMUData(const RTVector3&, const RTQuaternion&, const RTVector3& gyro,
-                    const RTVector3& accel, const RTVector3& compass, const uint64_t timestamp);
+    void newIMUData(const RTIMU_DATA&);
+
+signals:
+    void newIMU();
 
 protected:
 	void timerEvent(QTimerEvent *event);
@@ -66,10 +70,10 @@ private:
 
     Ui::SyntroNavClass ui;
 
-    QLabel *m_kalmanScalar;
-    QLabel *m_kalmanX;
-    QLabel *m_kalmanY;
-    QLabel *m_kalmanZ;
+    QLabel *m_fusionScalar;
+    QLabel *m_fusionX;
+    QLabel *m_fusionY;
+    QLabel *m_fusionZ;
 
     QLabel *m_poseX;
     QLabel *m_poseY;
@@ -92,6 +96,8 @@ private:
     QCheckBox *m_enableCompass;
     QCheckBox *m_enableDebug;
 
+    QLabel *m_imuType;
+    QLabel *m_calStatus;
     QLabel *m_rateStatus;
 	QLabel *m_controlStatus;
 
@@ -100,12 +106,7 @@ private:
     int m_rateTimer;
     int m_updateTimer;
 
-    RTVector3 m_gyro;
-    RTVector3 m_accel;
-    RTVector3 m_compass;
-
-    RTVector3 m_pose;
-    RTQuaternion m_state;
+    RTIMU_DATA m_imuData;
 
     int m_sampleCount;
 };

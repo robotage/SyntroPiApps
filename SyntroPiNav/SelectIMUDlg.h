@@ -17,52 +17,38 @@
 //  along with SyntroNet.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef COMPASSCALDLG_H
-#define COMPASSCALDLG_H
+#ifndef SELECTIMUDLG_H
+#define SELECTIMUDLG_H
 
 #include <QDialog>
 #include <QDialogButtonBox>
-#include <QMessageBox>
+#include <QComboBox>
 
-#include "RTMath.h"
+class RTIMUSettings;
 
-class CompassCalDlg : public QDialog
+class SelectIMUDlg : public QDialog
 {
 	Q_OBJECT
 
 public:
-    CompassCalDlg(QWidget *parent = 0);
-    ~CompassCalDlg();
-
-    const RTVector3& getCompassMin() { return m_compassMin; }
-    const RTVector3& getCompassMax() { return m_compassMax; }
+    SelectIMUDlg(RTIMUSettings *settings, QWidget *parent = 0);
+    ~SelectIMUDlg();
 
 public slots:
 	void onOk();
     void onCancel();
-    void newCalData(const RTVector3& compass);
-
-protected:
-    void timerEvent(QTimerEvent *event);
+    void setSelectAddress(int imuType);
 
 private:
 	void layoutWindow();
+    void setSelectAddress(int imuType, int slaveAddress);
+
+    RTIMUSettings *m_settings;
 
 	QDialogButtonBox *m_buttons;
-
-    QLabel *m_compassMinX;
-    QLabel *m_compassMinY;
-    QLabel *m_compassMinZ;
-
-    QLabel *m_compassMaxX;
-    QLabel *m_compassMaxY;
-    QLabel *m_compassMaxZ;
-
-    RTVector3 m_compassMin;
-    RTVector3 m_compassMax;
-
-    int m_timer;
+    QComboBox *m_selectIMU;
+    QComboBox *m_selectAddress;
 
 };
 
-#endif // COMPASSCALDLG_H
+#endif // SELECTIMUDLG_H

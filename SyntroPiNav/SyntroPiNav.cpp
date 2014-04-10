@@ -19,17 +19,16 @@
 
 
 #include <QMessageBox>
-#include <qboxlayout.h>
+#include <QBoxLayout>
 
 #include "SyntroPiNav.h"
 #include "NavClient.h"
 #include "SyntroAboutDlg.h"
 #include "BasicSetupDlg.h"
 #include "CompassCalDlg.h"
-
+#include "SelectIMUDlg.h"
 #include "IMUThread.h"
-#include "RTIMUMPU9150.h"
-#include "RTKalman.h"
+#include "RTIMU.h"
 
 #define RATE_TIMER_INTERVAL 2
 
@@ -45,6 +44,7 @@ SyntroPiNav::SyntroPiNav()
 	connect(ui.actionAbout, SIGNAL(triggered()), this, SLOT(onAbout()));
     connect(ui.actionBasicSetup, SIGNAL(triggered()), this, SLOT(onBasicSetup()));
     connect(ui.actionCalibrateCompass, SIGNAL(triggered()), this, SLOT(onCalibrateCompass()));
+    connect(ui.actionSelectIMU, SIGNAL(triggered()), this, SLOT(onSelectIMU()));
     connect(m_enableGyro, SIGNAL(stateChanged(int)), this, SLOT(onEnableGyro(int)));
     connect(m_enableAccel, SIGNAL(stateChanged(int)), this, SLOT(onEnableAccel(int)));
     connect(m_enableCompass, SIGNAL(stateChanged(int)), this, SLOT(onEnableCompass(int)));
@@ -54,22 +54,13 @@ SyntroPiNav::SyntroPiNav()
     m_imuThread = new IMUThread();
     m_client = new NavClient(this);
 
-    connect(m_imuThread,
-            SIGNAL(newIMUData(const RTVector3&, const RTQuaternion&, const RTVector3&,
-                              const RTVector3&, const RTVector3&, const uint64_t)),
-            this,
-            SLOT(newIMUData(const RTVector3&, const RTQuaternion&, const RTVector3&,
-                            const RTVector3&, const RTVector3&, const uint64_t)),
-            Qt::DirectConnection);
+    connect(m_imuThread, SIGNAL(newIMUData(const RTIMU_DATA&)),
+            this, SLOT(newIMUData(const RTIMU_DATA&)), Qt::DirectConnection);
 
-    connect(m_imuThread,
-            SIGNAL(newIMUData(const RTVector3&, const RTQuaternion&, const RTVector3&,
-                              const RTVector3&, const RTVector3&, const uint64_t)),
-            m_client,
-            SLOT(newIMUData(const RTVector3&, const RTQuaternion&, const RTVector3&,
-                            const RTVector3&, const RTVector3&, const uint64_t)),
-            Qt::DirectConnection);
+    connect(m_imuThread, SIGNAL(newIMUData(const RTIMU_DATA&)),
+            m_client, SLOT(newIMUData(const RTIMU_DATA&)), Qt::DirectConnection);
 
+    connect(this, SIGNAL(newIMU()), m_imuThread, SLOT(newIMU()));
 
     m_imuThread->resumeThread();
     m_client->resumeThread();
@@ -104,6 +95,15 @@ void SyntroPiNav::onCalibrateCompass()
     disconnect(m_imuThread, SIGNAL(newCalData(const RTVector3&)), &dlg, SLOT(newCalData(const RTVector3&)));
 }
 
+void SyntroPiNav::onSelectIMU()
+{
+    SelectIMUDlg dlg(m_imuThread->getSettings(), this);
+
+    if (dlg.exec() == QDialog::Accepted) {
+        emit newIMU();
+    }
+}
+
 void SyntroPiNav::onEnableGyro(int state)
 {
     m_imuThread->getIMU()->setGyroEnable(state == Qt::Checked);
@@ -125,14 +125,9 @@ void SyntroPiNav::onEnableDebug(int state)
 }
 
 
-void SyntroPiNav::newIMUData(const RTVector3& pose, const RTQuaternion& state, const RTVector3& gyro,
-                             const RTVector3& accel, const RTVector3& compass, const uint64_t /* timestamp */)
+void SyntroPiNav::newIMUData(const RTIMU_DATA& data)
 {
-    m_pose = pose;
-    m_state = state;
-    m_gyro = gyro;
-    m_accel = accel;
-    m_compass = compass;
+    m_imuData = data;
     m_sampleCount++;
 }
 
@@ -150,30 +145,42 @@ void SyntroPiNav::closeEvent(QCloseEvent *)
 void SyntroPiNav::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == m_updateTimer) {
-        m_gyroX->setText(QString::number(m_gyro.x()));
-        m_gyroY->setText(QString::number(m_gyro.y()));
-        m_gyroZ->setText(QString::number(m_gyro.z()));
-        m_accelX->setText(QString::number(m_accel.x()));
-        m_accelY->setText(QString::number(m_accel.y()));
-        m_accelZ->setText(QString::number(m_accel.z()));
-        m_compassX->setText(QString::number(m_compass.x()));
-        m_compassY->setText(QString::number(m_compass.y()));
-        m_compassZ->setText(QString::number(m_compass.z()));
+        m_gyroX->setText(QString::number(m_imuData.gyro.x()));
+        m_gyroY->setText(QString::number(m_imuData.gyro.y()));
+        m_gyroZ->setText(QString::number(m_imuData.gyro.z()));
+        m_accelX->setText(QString::number(m_imuData.accel.x()));
+        m_accelY->setText(QString::number(m_imuData.accel.y()));
+        m_accelZ->setText(QString::number(m_imuData.accel.z()));
+        m_compassX->setText(QString::number(m_imuData.compass.x()));
+        m_compassY->setText(QString::number(m_imuData.compass.y()));
+        m_compassZ->setText(QString::number(m_imuData.compass.z()));
 
-        m_poseX->setText(QString::number(m_pose.x()));
-        m_poseY->setText(QString::number(m_pose.y()));
-        m_poseZ->setText(QString::number(m_pose.z()));
+        m_poseX->setText(QString::number(m_imuData.fusionPose.x()));
+        m_poseY->setText(QString::number(m_imuData.fusionPose.y()));
+        m_poseZ->setText(QString::number(m_imuData.fusionPose.z()));
 
-        m_kalmanScalar->setText(QString::number(m_state.scalar()));
-        m_kalmanX->setText(QString::number(m_state.x()));
-        m_kalmanY->setText(QString::number(m_state.y()));
-        m_kalmanZ->setText(QString::number(m_state.z()));
+        m_fusionScalar->setText(QString::number(m_imuData.fusionQPose.scalar()));
+        m_fusionX->setText(QString::number(m_imuData.fusionQPose.x()));
+        m_fusionY->setText(QString::number(m_imuData.fusionQPose.y()));
+        m_fusionZ->setText(QString::number(m_imuData.fusionQPose.z()));
     } else {
         m_controlStatus->setText(m_client->getLinkState());
 
         float rate = (float)m_sampleCount / (float(RATE_TIMER_INTERVAL));
         m_sampleCount = 0;
         m_rateStatus->setText(QString("Sample rate: %1 per second").arg(rate));
+        if (m_imuThread->getIMU() != NULL) {
+            m_imuType->setText(m_imuThread->getIMU()->IMUName());
+
+            if (!m_imuThread->getIMU()->IMUGyroBiasValid()) {
+                m_calStatus->setText("Gyro bias being calculated - keep IMU still!");
+            } else {
+                if (m_imuThread->getIMU()->IMUCompassCalValid())
+                        m_calStatus->setText("Compass calibration is valid");
+                else
+                        m_calStatus->setText("Compass is not calibrated!");
+            }
+        }
     }
 }
 
@@ -183,22 +190,39 @@ void SyntroPiNav::layoutWindow()
     vLayout->setContentsMargins(3, 3, 3, 3);
     vLayout->setSpacing(3);
 
-    vLayout->addWidget(new QLabel("Kalman state (quaternion): "));
+    QHBoxLayout *imuLayout = new QHBoxLayout();
+    vLayout->addLayout(imuLayout);
+    imuLayout->addWidget(new QLabel("IMU type: "));
+    m_imuType = new QLabel();
+    imuLayout->addWidget(m_imuType);
+    imuLayout->setStretch(1, 1);
+
+    vLayout->addSpacing(10);
+
+    QHBoxLayout *calLayout = new QHBoxLayout();
+    vLayout->addLayout(calLayout);
+    calLayout->addWidget(new QLabel("Calibration status: "));
+    m_calStatus = new QLabel();
+    calLayout->addWidget(m_calStatus);
+    calLayout->setStretch(1, 1);
+
+    vLayout->addSpacing(10);
+    vLayout->addWidget(new QLabel("Fusion state (quaternion): "));
 
     QHBoxLayout *dataLayout = new QHBoxLayout();
     dataLayout->addSpacing(30);
-    m_kalmanScalar = new QLabel("1");
-    m_kalmanScalar->setFrameStyle(QFrame::Panel);
-    m_kalmanX = new QLabel("0");
-    m_kalmanX->setFrameStyle(QFrame::Panel);
-    m_kalmanY = new QLabel("0");
-    m_kalmanY->setFrameStyle(QFrame::Panel);
-    m_kalmanZ = new QLabel("0");
-    m_kalmanZ->setFrameStyle(QFrame::Panel);
-    dataLayout->addWidget(m_kalmanScalar);
-    dataLayout->addWidget(m_kalmanX);
-    dataLayout->addWidget(m_kalmanY);
-    dataLayout->addWidget(m_kalmanZ);
+    m_fusionScalar = new QLabel("1");
+    m_fusionScalar->setFrameStyle(QFrame::Panel);
+    m_fusionX = new QLabel("0");
+    m_fusionX->setFrameStyle(QFrame::Panel);
+    m_fusionY = new QLabel("0");
+    m_fusionY->setFrameStyle(QFrame::Panel);
+    m_fusionZ = new QLabel("0");
+    m_fusionZ->setFrameStyle(QFrame::Panel);
+    dataLayout->addWidget(m_fusionScalar);
+    dataLayout->addWidget(m_fusionX);
+    dataLayout->addWidget(m_fusionY);
+    dataLayout->addWidget(m_fusionZ);
     dataLayout->addSpacing(30);
     vLayout->addLayout(dataLayout);
 
@@ -271,7 +295,7 @@ void SyntroPiNav::layoutWindow()
     vLayout->addLayout(dataLayout);
 
     vLayout->addSpacing(10);
-    vLayout->addWidget(new QLabel("Kalman controls: "));
+    vLayout->addWidget(new QLabel("Fusion controls: "));
 
     m_enableGyro = new QCheckBox("Enable gyros");
     m_enableGyro->setChecked(true);

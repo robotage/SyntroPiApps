@@ -22,7 +22,6 @@
 #include "NavClient.h"
 
 #include "IMUThread.h"
-#include "RTKalman.h"
 #include "RTIMUMPU9150.h"
 
 #include <termios.h>
@@ -59,13 +58,8 @@ SyntroPiNavConsole::SyntroPiNavConsole(bool daemonMode, QObject *parent)
 
     m_client = new NavClient(this);
 
-    connect(m_imuThread,
-            SIGNAL(newIMUData(const RTVector3&, const RTQuaternion&, const RTVector3&,
-                              const RTVector3&, const RTVector3&, const uint64_t)),
-            m_client,
-            SLOT(newIMUData(const RTVector3&, const RTQuaternion&, const RTVector3&,
-                            const RTVector3&, const RTVector3&, const uint64_t)),
-            Qt::DirectConnection);
+    connect(m_imuThread, SIGNAL(newIMUData(const RTIMU_DATA&)),
+            m_client, SLOT(newIMUData(const RTIMU_DATA&)), Qt::DirectConnection);
 
 	m_client->resumeThread();
 

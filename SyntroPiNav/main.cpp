@@ -22,6 +22,7 @@
 #include <QApplication>
 
 #include "SyntroUtils.h"
+#include "RTIMULibDefs.h"
 
 int runGuiApp(int argc, char **);
 int runConsoleApp(int argc, char **);
@@ -29,6 +30,7 @@ int runConsoleApp(int argc, char **);
 
 int main(int argc, char *argv[])
 {
+    qRegisterMetaType <RTIMU_DATA>("RTIMU_DATA");
     if (SyntroUtils::checkConsoleModeFlag(argc, argv))
 		return runConsoleApp(argc, argv);
 	else

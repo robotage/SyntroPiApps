@@ -18,9 +18,8 @@
 //
 
 #include "CompassCalDlg.h"
-#include "SyntroUtils.h"
-#include <qboxlayout.h>
-#include <qformlayout.h>
+#include <QBoxLayout>
+#include <QLabel>
 
 CompassCalDlg::CompassCalDlg(QWidget *parent)
 	: QDialog(parent, Qt::WindowCloseButtonHint | Qt::WindowTitleHint)

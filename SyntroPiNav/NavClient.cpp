@@ -26,7 +26,7 @@
 NavClient::NavClient(QObject *)
     : Endpoint(NAVCLIENT_BACKGROUND_INTERVAL, "NavClient")
 {
-
+    m_servicePort = -1;
 }
 
 NavClient::~NavClient()
@@ -36,8 +36,6 @@ NavClient::~NavClient()
 
 void NavClient::appClientInit()
 {
-    m_newIMUData = false;
-    m_servicePort = -1;
     newStream();
 }
 
@@ -50,58 +48,103 @@ void NavClient::appClientBackground()
 {
     QMutexLocker locker(&m_navLock);
     SYNTRO_NAVDATA data;
+    RTIMU_DATA localData;
+    int recordCount;
+    int totalLength;
+    int validFields;
 
-    if (!m_newIMUData)
+    if (m_imuData.empty())
+        return;
+
+    if (m_servicePort == -1)
         return;
 
     if (!clientIsServiceActive(m_servicePort) || !clientClearToSend(m_servicePort))
         return;                                             // can't send for network reasons
 
-    SYNTRO_EHEAD *multiCast = clientBuildMessage(m_servicePort, sizeof(SYNTRO_RECORD_HEADER) + sizeof(SYNTRO_NAVDATA));
+    recordCount = m_imuData.count();
+    totalLength = sizeof(SYNTRO_NAVDATA) * recordCount;
+
+    SYNTRO_EHEAD *multiCast = clientBuildMessage(m_servicePort, sizeof(SYNTRO_RECORD_HEADER) + totalLength);
     SYNTRO_RECORD_HEADER *head = (SYNTRO_RECORD_HEADER *)(multiCast + 1);
     SyntroUtils::convertIntToUC2(SYNTRO_RECORD_TYPE_NAV, head->type);
     SyntroUtils::convertIntToUC2(SYNTRO_RECORD_TYPE_NAV_IMU, head->subType);
     SyntroUtils::convertIntToUC2(sizeof(SYNTRO_RECORD_HEADER), head->headerLength);
-    SyntroUtils::convertInt64ToUC8(m_timestamp, head->timestamp);
+    SyntroUtils::convertInt64ToUC8(SyntroClock(), head->timestamp);
 
-    data.pose[0] = m_pose.x();
-    data.pose[1] = m_pose.y();
-    data.pose[2] = m_pose.z();
+    for (int record = 0; record < recordCount; record++) {
 
-    data.state[0] = m_stateVector.scalar();
-    data.state[1] = m_stateVector.x();
-    data.state[2] = m_stateVector.y();
-    data.state[3] = m_stateVector.z();
+        localData = m_imuData.dequeue();
 
-    data.gyro[0] = m_gyro.x();
-    data.gyro[1] = m_gyro.y();
-    data.gyro[2] = m_gyro.z();
+        validFields = 0;
 
-    data.accel[0] = m_accel.x();
-    data.accel[1] = m_accel.y();
-    data.accel[2] = m_accel.z();
+        if (localData.fusionPoseValid)
+            validFields |= SYNTRO_NAVDATA_VALID_FUSIONPOSE;
+        if (localData.fusionQPoseValid)
+            validFields |= SYNTRO_NAVDATA_VALID_FUSIONQPOSE;
+        if (localData.gyroValid)
+            validFields |= SYNTRO_NAVDATA_VALID_GYRO;
+        if (localData.accelValid)
+            validFields |= SYNTRO_NAVDATA_VALID_ACCEL;
+        if (localData.compassValid)
+            validFields |= SYNTRO_NAVDATA_VALID_COMPASS;
+        if (localData.compassValid)
+            validFields |= SYNTRO_NAVDATA_VALID_PRESSURE;
+        if (localData.compassValid)
+            validFields |= SYNTRO_NAVDATA_VALID_TEMPERATURE;
+        if (localData.compassValid)
+            validFields |= SYNTRO_NAVDATA_VALID_HUMIDITY;
 
-    data.compass[0] = m_compass.x();
-    data.compass[1] = m_compass.y();
-    data.compass[2] = m_compass.z();
+        SyntroUtils::convertIntToUC2(validFields, data.validFields);
 
-    memcpy(head + 1, &data, sizeof(SYNTRO_NAVDATA));
-    clientSendMessage(m_servicePort, multiCast, sizeof(SYNTRO_RECORD_HEADER) + sizeof(SYNTRO_NAVDATA), SYNTROLINK_MEDPRI);
-    m_newIMUData = false;
+        data.fusionPose[0] = localData.fusionPose.x();
+        data.fusionPose[1] = localData.fusionPose.y();
+        data.fusionPose[2] = localData.fusionPose.z();
+
+        data.fusionQPose[0] = localData.fusionQPose.scalar();
+        data.fusionQPose[1] = localData.fusionQPose.x();
+        data.fusionQPose[2] = localData.fusionQPose.y();
+        data.fusionQPose[3] = localData.fusionQPose.z();
+
+        data.gyro[0] = localData.gyro.x();
+        data.gyro[1] = localData.gyro.y();
+        data.gyro[2] = localData.gyro.z();
+
+        data.accel[0] = localData.accel.x();
+        data.accel[1] = localData.accel.y();
+        data.accel[2] = localData.accel.z();
+
+        data.compass[0] = localData.compass.x();
+        data.compass[1] = localData.compass.y();
+        data.compass[2] = localData.compass.z();
+
+        data.pressure = localData.pressure;
+        data.temperature = localData.temperature;
+        data.humidity = localData.humidity;
+
+        SyntroUtils::convertInt64ToUC8(localData.timestamp, data.timestamp);
+
+        memcpy(((SYNTRO_NAVDATA *)(head + 1)) + record, &data, sizeof(SYNTRO_NAVDATA));
+    }
+    clientSendMessage(m_servicePort, multiCast, sizeof(SYNTRO_RECORD_HEADER) + totalLength, SYNTROLINK_MEDPRI);
 }
 
-void NavClient::newIMUData(const RTVector3& pose, const RTQuaternion& state, const RTVector3& gyro,
-                           const RTVector3& accel, const RTVector3& compass, const uint64_t timestamp)
+void NavClient::newIMUData(const RTIMU_DATA& data)
 {
     QMutexLocker locker(&m_navLock);
+    if ((m_servicePort == -1) || !clientIsServiceActive(m_servicePort)) {
+        // can't send for network reasons so dump queue
+        m_imuData.clear();
+        return;
+    }
 
-    m_pose = pose;
-    m_stateVector = state;
-    m_gyro = gyro;
-    m_accel = accel;
-    m_compass = compass;
-    m_timestamp = timestamp;
-    m_newIMUData = true;
+    m_imuData.enqueue(data);
+
+    if (m_imuData.count() > 50) {
+        // stop queue getting stupidly big
+        m_imuData.dequeue();
+        qDebug() << "NavClient queue overflow";
+    }
 }
 
 
