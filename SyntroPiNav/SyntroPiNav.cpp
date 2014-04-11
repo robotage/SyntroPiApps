@@ -316,7 +316,7 @@ void SyntroPiNav::layoutWindow()
     vLayout->addStretch(1);
 
     centralWidget()->setLayout(vLayout);
-    setFixedSize(500, 450);
+    setFixedSize(500, 500);
 
  }
 
