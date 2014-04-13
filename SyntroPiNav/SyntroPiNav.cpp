@@ -27,6 +27,7 @@
 #include "BasicSetupDlg.h"
 #include "CompassCalDlg.h"
 #include "SelectIMUDlg.h"
+#include "SelectFusionDlg.h"
 #include "IMUThread.h"
 #include "RTIMU.h"
 
@@ -44,6 +45,7 @@ SyntroPiNav::SyntroPiNav()
 	connect(ui.actionAbout, SIGNAL(triggered()), this, SLOT(onAbout()));
     connect(ui.actionBasicSetup, SIGNAL(triggered()), this, SLOT(onBasicSetup()));
     connect(ui.actionCalibrateCompass, SIGNAL(triggered()), this, SLOT(onCalibrateCompass()));
+    connect(ui.actionSelectFusionAlgorithm, SIGNAL(triggered()), this, SLOT(onSelectFusionAlgorithm()));
     connect(ui.actionSelectIMU, SIGNAL(triggered()), this, SLOT(onSelectIMU()));
     connect(m_enableGyro, SIGNAL(stateChanged(int)), this, SLOT(onEnableGyro(int)));
     connect(m_enableAccel, SIGNAL(stateChanged(int)), this, SLOT(onEnableAccel(int)));
@@ -74,6 +76,7 @@ SyntroPiNav::SyntroPiNav()
     m_rateTimer = startTimer(RATE_TIMER_INTERVAL * 1000);
     m_updateTimer = startTimer(100);
     m_sampleCount = 0;
+    m_fusionType->setText(RTFusion::fusionName(m_imuThread->getSettings()->m_fusionType));
 }
 
 SyntroPiNav::~SyntroPiNav()
@@ -93,6 +96,16 @@ void SyntroPiNav::onCalibrateCompass()
         m_imuThread->setCalibrationMode(false);
     }
     disconnect(m_imuThread, SIGNAL(newCalData(const RTVector3&)), &dlg, SLOT(newCalData(const RTVector3&)));
+}
+
+void SyntroPiNav::onSelectFusionAlgorithm()
+{
+    SelectFusionDlg dlg(m_imuThread->getSettings(), this);
+
+    if (dlg.exec() == QDialog::Accepted) {
+        emit newIMU();
+        m_fusionType->setText(RTFusion::fusionName(m_imuThread->getSettings()->m_fusionType));
+    }
 }
 
 void SyntroPiNav::onSelectIMU()
@@ -295,6 +308,17 @@ void SyntroPiNav::layoutWindow()
     vLayout->addLayout(dataLayout);
 
     vLayout->addSpacing(10);
+
+    QHBoxLayout *fusionBox = new QHBoxLayout();
+    QLabel *fusionTypeLabel = new QLabel("Fusion algorithm: ");
+    fusionBox->addWidget(fusionTypeLabel);
+    fusionTypeLabel->setMaximumWidth(150);
+    m_fusionType = new QLabel();
+    fusionBox->addWidget(m_fusionType);
+    vLayout->addLayout(fusionBox);
+
+    vLayout->addSpacing(10);
+
     vLayout->addWidget(new QLabel("Fusion controls: "));
 
     m_enableGyro = new QCheckBox("Enable gyros");
