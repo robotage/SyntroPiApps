@@ -92,20 +92,4 @@ void IMUThread::timerEvent(QTimerEvent * /* event */)
     }
 }
 
-void IMUThread::setCalibrationMode(bool enable)
-{
-    m_imu->setCalibrationMode(enable);
-    m_calibrationMode = enable;
-}
-
-void IMUThread::newCompassCalData(const RTVector3& compassCalMin, const RTVector3& compassCalMax)
-{
-    m_settings->m_compassCalValid = true;
-    m_settings->m_compassCalMin = compassCalMin;
-    m_settings->m_compassCalMax = compassCalMax;
-    m_settings->saveSettings();
-    if (m_imu != NULL)
-        m_imu->setCalibrationData(true, compassCalMin, compassCalMax);
-}
-
 

@@ -1,6 +1,6 @@
 # SyntroPiApps
 
-SyntroApps contains all the SyntroNet Raspberry Pi apps in one repo.
+SyntroPiApps contains all the SyntroNet Raspberry Pi apps in one repo.
 
 Check out www.richards-tech.com for more details.
 
@@ -9,6 +9,7 @@ Check out www.richards-tech.com for more details.
 1. Qt4 or Qt5 development libraries and headers (Qt5 recommended if possible)
 2. SyntroCore libraries and headers 
 3. gstreamer sdk installed in standard location for GS apps
+4. Octave for ellipsoid fitting compass calibration in SyntroPiNav
 
 
 ### Fetch and Build
@@ -51,6 +52,7 @@ Alternatively, each app can be individually compiled (better on lower power proc
 	qmake
 	make
 	sudo make install
+	
 
 
 

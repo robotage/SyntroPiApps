@@ -36,16 +36,17 @@ class IMUThread;
 
 class SyntroPiNav : public QMainWindow
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
     SyntroPiNav();
     ~SyntroPiNav();
 
 public slots:
-	void onAbout();
-	void onBasicSetup();
-    void onCalibrateCompass();
+    void onAbout();
+    void onBasicSetup();
+    void onCalibrateAccelerometers();
+    void onCalibrateMagnetometers();
     void onSelectFusionAlgorithm();
     void onSelectIMU();
     void onEnableGyro(int);
@@ -58,27 +59,30 @@ signals:
     void newIMU();
 
 protected:
-	void timerEvent(QTimerEvent *event);
-	void closeEvent(QCloseEvent *event);
+    void timerEvent(QTimerEvent *event);
+    void closeEvent(QCloseEvent *event);
 
 private:
     void layoutStatusBar();
     void layoutWindow();
     void saveWindowState();
-	void restoreWindowState();
+    void restoreWindowState();
+    QLabel *getFixedPanel(QString text);
 
     IMUThread *m_imuThread;
 
-    Ui::SyntroNavClass ui;
+    //  Qt GUI stuff
 
-    QLabel *m_fusionScalar;
-    QLabel *m_fusionX;
-    QLabel *m_fusionY;
-    QLabel *m_fusionZ;
+    Ui::SyntroPiNavClass ui;
 
-    QLabel *m_poseX;
-    QLabel *m_poseY;
-    QLabel *m_poseZ;
+    QLabel *m_fusionQPoseScalar;
+    QLabel *m_fusionQPoseX;
+    QLabel *m_fusionQPoseY;
+    QLabel *m_fusionQPoseZ;
+
+    QLabel *m_fusionPoseX;
+    QLabel *m_fusionPoseY;
+    QLabel *m_fusionPoseZ;
 
     QLabel *m_gyroX;
     QLabel *m_gyroY;
@@ -87,10 +91,15 @@ private:
     QLabel *m_accelX;
     QLabel *m_accelY;
     QLabel *m_accelZ;
+    QLabel *m_accelMagnitude;
+    QLabel *m_accelResidualX;
+    QLabel *m_accelResidualY;
+    QLabel *m_accelResidualZ;
 
     QLabel *m_compassX;
     QLabel *m_compassY;
     QLabel *m_compassZ;
+    QLabel *m_compassMagnitude;
 
     QLabel *m_fusionType;
     QCheckBox *m_enableGyro;
@@ -99,9 +108,10 @@ private:
     QCheckBox *m_enableDebug;
 
     QLabel *m_imuType;
+    QLabel *m_biasStatus;
     QLabel *m_calStatus;
     QLabel *m_rateStatus;
-	QLabel *m_controlStatus;
+    QLabel *m_controlStatus;
 
     NavClient *m_client;
 

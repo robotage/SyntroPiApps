@@ -39,8 +39,6 @@ public:
     virtual ~IMUThread();
 
     RTIMUSettings *getSettings() { return m_settings; }
-    void setCalibrationMode(bool enable);
-    void newCompassCalData(const RTVector3& compassCalMin, const RTVector3& compassCalMax);
 
     RTIMU *getIMU() { return (RTIMU *)m_imu; }
 

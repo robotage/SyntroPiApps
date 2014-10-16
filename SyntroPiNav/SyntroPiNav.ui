@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SyntroNavClass</class>
- <widget class="QMainWindow" name="SyntroNavClass">
+ <class>SyntroPiNavClass</class>
+ <widget class="QMainWindow" name="SyntroPiNavClass">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>SyntroCam</string>
+   <string>SyntroPiNav</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="minimumSize">
@@ -47,9 +47,10 @@
      <string>Actions</string>
     </property>
     <addaction name="actionBasicSetup"/>
-    <addaction name="actionCalibrateCompass"/>
     <addaction name="actionSelectFusionAlgorithm"/>
     <addaction name="actionSelectIMU"/>
+    <addaction name="actionCalibrateAccelerometers"/>
+    <addaction name="actionCalibrateMagnetometers"/>
     <addaction name="actionExit"/>
    </widget>
    <addaction name="menuActions"/>
@@ -70,51 +71,31 @@
    <addaction name="separator"/>
    <addaction name="actionSelectFusionAlgorithm"/>
    <addaction name="separator"/>
-   <addaction name="actionCalibrateCompass"/>
+   <addaction name="actionCalibrateAccelerometers"/>
+   <addaction name="separator"/>
+   <addaction name="actionCalibrateMagnetometers"/>
    <addaction name="separator"/>
    <addaction name="actionExit"/>
    <addaction name="separator"/>
   </widget>
-  <action name="actionStartCapture">
+  <action name="actionSelectIMU">
    <property name="text">
-    <string>Start Capture</string>
-   </property>
-   <property name="iconText">
-    <string>Start</string>
-   </property>
-   <property name="toolTip">
-    <string>Start video capture</string>
-   </property>
-   <property name="iconVisibleInMenu">
-    <bool>false</bool>
+    <string>Select IMU</string>
    </property>
   </action>
-  <action name="actionStopCapture">
+  <action name="actionSelectFusionAlgorithm">
    <property name="text">
-    <string>Stop Capture</string>
-   </property>
-   <property name="iconText">
-    <string>Stop</string>
-   </property>
-   <property name="toolTip">
-    <string>Stop video capture</string>
-   </property>
-   <property name="iconVisibleInMenu">
-    <bool>false</bool>
+    <string>Select fusion algorithm</string>
    </property>
   </action>
-  <action name="actionScaleImage">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
+  <action name="actionCalibrateMagnetometers">
    <property name="text">
-    <string>Scale Image</string>
+    <string>Calibrate magnetometers</string>
    </property>
-   <property name="iconVisibleInMenu">
-    <bool>false</bool>
+  </action>
+  <action name="actionCalibrateAccelerometers">
+   <property name="text">
+    <string>Calibrate accelerometers</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -127,59 +108,9 @@
     <string>Basic setup</string>
    </property>
   </action>
-  <action name="actionConfigureCamera">
-   <property name="text">
-    <string>Camera setup</string>
-   </property>
-   <property name="iconText">
-    <string>Camera</string>
-   </property>
-   <property name="menuRole">
-    <enum>QAction::TextHeuristicRole</enum>
-   </property>
-  </action>
-  <action name="actionConfigureStreams">
-   <property name="text">
-    <string>Streams setup</string>
-   </property>
-   <property name="iconText">
-    <string>Streams</string>
-   </property>
-  </action>
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
-   </property>
-  </action>
-  <action name="actionConfigureMotion">
-   <property name="text">
-    <string>Motion detection setup</string>
-   </property>
-   <property name="iconText">
-    <string>Motion</string>
-   </property>
-  </action>
-  <action name="actionConfigureAudio">
-   <property name="text">
-    <string>Audio setup</string>
-   </property>
-   <property name="iconText">
-    <string>Audio</string>
-   </property>
-  </action>
-  <action name="actionCalibrateCompass">
-   <property name="text">
-    <string>Calibrate compass</string>
-   </property>
-  </action>
-  <action name="actionSelectIMU">
-   <property name="text">
-    <string>Select IMU</string>
-   </property>
-  </action>
-  <action name="actionSelectFusionAlgorithm">
-   <property name="text">
-    <string>Select fusion algorithm</string>
    </property>
   </action>
  </widget>

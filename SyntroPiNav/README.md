@@ -10,10 +10,11 @@ SyntroPiNav uses the RTIMULib IMU library. Check out https://github.com/richards
 
 1. Qt4 or Qt5 development libraries and headers
 2. SyntroCore libraries and headers 
+3. Octave in order to use the ellipsoid fitting compass calibration.
 
 The system dependencies can be satisfied by executing:
 
-	sudo apt-get install libqt4-dev
+	sudo apt-get install libqt4-dev liboctave-dev
 
 ### Fetch
 
@@ -34,7 +35,7 @@ Go to the SyntroPiNav directory and:
 
         SyntroPiNav
 
-The GUI window should pop up and display the IMU data. This mode can also be used for calibrating the compass.
+The GUI window should pop up and display the IMU data. This mode can also be used for calibrating the compass and accelerometers. Refer to the instructions in the RTIMULib repo (especially Calibration.pdf) for details on how to calibrate the compass and accelerometers. SyntroPiNav calibrates the IMU in exactly the same way as RTIMULibDemo.
 
 #### Console mode
 
