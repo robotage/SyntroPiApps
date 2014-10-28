@@ -33,7 +33,7 @@ CONFIG += debug_and_release link_pkgconfig
 
 PKGCONFIG += syntro
 
-LIBS += -lasound -L/opt/vc/lib -lmmal -lmmal_core -lmmal_util -lbcm_host
+LIBS += -lasound -L/opt/vc/lib -lmmal -lmmal_core -lmmal_util -lbcm_host -lvcos
 
 target.path = /usr/bin
 

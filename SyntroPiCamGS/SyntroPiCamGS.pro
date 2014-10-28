@@ -36,7 +36,7 @@ CONFIG += debug_and_release link_pkgconfig
 PKGCONFIG += syntro
 PKGCONFIG += gstreamer-0.10 gstreamer-app-0.10
 
-LIBS += -lasound -L/opt/vc/lib -lmmal -lmmal_core -lmmal_util -lbcm_host
+LIBS += -lasound -L/opt/vc/lib -lmmal -lmmal_core -lmmal_util -lbcm_host -lvcos
 
 target.path = /usr/bin
 
