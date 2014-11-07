@@ -4,6 +4,12 @@ SyntroPiApps contains all the SyntroNet Raspberry Pi apps in one repo.
 
 Check out www.richards-tech.com for more details.
 
+### Release history
+
+#### November 6 2014
+
+Updated SyntroPiCam with new bus select IMU dialog.
+
 ### Dependencies
 
 1. Qt4 or Qt5 development libraries and headers (Qt5 recommended if possible)

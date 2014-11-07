@@ -28,24 +28,25 @@ class RTIMUSettings;
 
 class SelectIMUDlg : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
     SelectIMUDlg(RTIMUSettings *settings, QWidget *parent = 0);
     ~SelectIMUDlg();
 
 public slots:
-	void onOk();
+    void onOk();
     void onCancel();
     void setSelectAddress(int imuType);
 
 private:
-	void layoutWindow();
+    void layoutWindow();
     void setSelectAddress(int imuType, int slaveAddress);
 
     RTIMUSettings *m_settings;
 
-	QDialogButtonBox *m_buttons;
+    QDialogButtonBox *m_buttons;
+    QComboBox *m_selectBus;
     QComboBox *m_selectIMU;
     QComboBox *m_selectAddress;
 
