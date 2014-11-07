@@ -6,7 +6,7 @@ Check out www.richards-tech.com for more details.
 
 ### Release history
 
-#### November 6 2014
+#### November 6 2014 - 1.0.1
 
 Updated SyntroPiCam with new bus select IMU dialog.
 
