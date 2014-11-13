@@ -31,6 +31,9 @@
 
 #define AVMUXENCODE_INTERVAL  (SYNTRO_CLOCKS_PER_SEC / 50)
 
+#define AVMUX_VIDEO_QUEUE_MAX       2
+#define AVMUX_AUDIO_QUEUE_MAX       2
+
 typedef struct
 {
     QByteArray data;

@@ -6,6 +6,10 @@ Check out www.richards-tech.com for more details.
 
 ### Release history
 
+#### November 13 2014 - 1.0.2
+
+Updated SyntroPiCamGS to reduce latency.
+
 #### November 6 2014 - 1.0.1
 
 Updated SyntroPiCam with new bus select IMU dialog.
@@ -22,8 +26,8 @@ Updated SyntroPiCam with new bus select IMU dialog.
 
 If SyntroCore has not been installed yet:
 
-	mkdir ~/SyntroNet
-	cd ~/SyntroNet
+	mkdir ~/richards-tech
+	cd ~/richards-tech
 	git clone git://github.com/richards-tech/SyntroCore.git
 	cd SyntroCore
 	qmake
@@ -37,7 +41,7 @@ To compile the GS apps, install the gstreamer sdk at the standard location. See 
 	
 Then:
 
-	cd ~/SyntroNet
+	cd ~/richards-tech
 	git clone git://github.com/richards-tech/SyntroApps.git
 	git clone git://github.com/richards-tech/SyntroPiApps.git
 	cd SyntroPiApps
@@ -54,7 +58,7 @@ To make the GS apps:
 
 Alternatively, each app can be individually compiled (better on lower power processors such as ARMs). For example, to compile SyntroPiCam:
 
-	cd ~/SyntroNet/SyntroPiApps/SyntroPiCam
+	cd ~/richards-tech/SyntroPiApps/SyntroPiCam
 	qmake
 	make
 	sudo make install

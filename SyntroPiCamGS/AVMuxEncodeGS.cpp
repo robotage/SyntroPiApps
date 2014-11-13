@@ -129,6 +129,10 @@ void AVMuxEncode::newVideoData(QByteArray videoData, qint64 timestamp, int param
 
     m_videoSrcLock.lock();
     m_videoSrcQ.enqueue(qd);
+
+    if (m_videoSrcQ.count() >= AVMUX_VIDEO_QUEUE_MAX)
+        m_videoSrcQ.dequeue();
+
     m_videoSrcLock.unlock();
 }
 
@@ -141,6 +145,10 @@ void AVMuxEncode::newVideoData(QByteArray videoData)
 
     m_videoSrcLock.lock();
     m_videoSrcQ.enqueue(qd);
+
+    if (m_videoSrcQ.count() >= AVMUX_VIDEO_QUEUE_MAX)
+        m_videoSrcQ.dequeue();
+
     m_videoSrcLock.unlock();
 }
 
@@ -153,6 +161,10 @@ void AVMuxEncode::newAudioData(QByteArray audioData, qint64 timestamp, int param
 
     m_audioSrcLock.lock();
     m_audioSrcQ.enqueue(qd);
+
+    if (m_audioSrcQ.count() >= AVMUX_AUDIO_QUEUE_MAX)
+        m_audioSrcQ.dequeue();
+
     m_audioSrcLock.unlock();
 }
 
@@ -165,6 +177,10 @@ void AVMuxEncode::newAudioData(QByteArray audioData)
 
     m_audioSrcLock.lock();
     m_audioSrcQ.enqueue(qd);
+
+    if (m_audioSrcQ.count() >= AVMUX_AUDIO_QUEUE_MAX)
+        m_audioSrcQ.dequeue();
+
     m_audioSrcLock.unlock();
 }
 
